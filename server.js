@@ -20,7 +20,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 app.use('/uploads', express.static(uploadDir));
 
-// Multer Disk Storage
+// Multer Storage Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_'))
@@ -62,13 +62,14 @@ let db = {
         }
     ],
     jobs: [
-        { id: 'j1', title: 'Fintech Mobile App Frontend', type: 'Full-Time', budget: '₦25,000/mo', description: 'Looking for an expert React Native developer to build clean financial dashboards.' },
-        { id: 'j2', title: 'Brand Identity & Logo Redesign', type: 'Half-Time', budget: '₦12,000/mo', description: 'Need clean brand design, logo variations, and social media media kits.' }
+        { id: 'j1', title: 'Fintech Mobile App Frontend', type: 'Full-Time', budget: '₦250,000/mo', description: 'Looking for an expert React Native developer to build clean financial dashboards.' },
+        { id: 'j2', title: 'Brand Identity & Logo Redesign', type: 'Half-Time', budget: '₦120,000/mo', description: 'Need clean brand design, logo variations, and social media media kits.' }
     ],
     offers: [],           // Contract letters
     payments: [],         // Smart Cash receipts
-    withdrawals: [],      // User withdrawal requests
-    workSubmissions: [],  // Submitted deliverables
+    withdrawals: [],      // Bank payout requests
+    supportTickets: [],   // Live AI inquiries & Customer Support escalation tickets
+    workSubmissions: [],  // Delivered work files
     transactions: [],     // Audit ledger
     platformRevenue: 0,
     bankDetails: {
@@ -80,7 +81,7 @@ let db = {
 
 // ==================== API ENDPOINTS ==================== //
 
-// Get Database State
+// Get Global Database State
 app.get('/api/state', (req, res) => {
     res.json(db);
 });
@@ -126,7 +127,7 @@ app.post('/api/register', upload.fields([{ name: 'photo', maxCount: 1 }, { name:
             referredBy: refCodeUsed || null
         };
 
-        // Referral Reward: Credit ₦400 to Referrer
+        // Referral Bonus: ₦400 to referrer
         if (refCodeUsed) {
             const referrer = db.users.find(u => u.refCode === refCodeUsed.trim().toUpperCase());
             if (referrer) {
@@ -177,7 +178,80 @@ app.post('/api/login', (req, res) => {
     res.json({ success: true, user, message: 'Welcome back!' });
 });
 
-// WITHDRAWAL SYSTEM (Rule: Must leave at least ₦10 in balance)
+// LEGIT VERSATILE AI ENGINE & LIVE SUPPORT DESK ROUTE
+app.post('/api/ai/chat', (req, res) => {
+    const { userId, prompt } = req.body;
+    const query = (prompt || '').trim().toLowerCase();
+    const user = db.users.find(u => u.id === userId) || { id: 'guest', name: 'Guest User', email: 'guest@web.com' };
+
+    let aiReply = "";
+
+    if (query.includes('complaint') || query.includes('issue') || query.includes('support') || 
+        query.includes('refund') || query.includes('scam') || query.includes('payment problem') || 
+        query.includes('not working') || query.includes('delay') || query.includes('help')) {
+        
+        aiReply = `🤖 **SphereAI Customer Support**:\nI have logged your request directly to our Admin Support Desk. Our team is currently reviewing your message.\n\n⏱️ **Please wait for 8 hours to receive a direct response from Customer Support.**`;
+    } 
+    else if (query.includes('health') || query.includes('exercise') || query.includes('diet')) {
+        aiReply = `💪 **SphereAI Daily Living Tip**:\nMaintain balance! Drink at least 2.5 liters of water daily, exercise 30 minutes, get 7-8 hours of sleep, and take screen breaks every 45 minutes while working online.`;
+    } 
+    else if (query.includes('money') || query.includes('save') || query.includes('budget') || query.includes('finance')) {
+        aiReply = `💡 **SphereAI Financial Advice**:\nFollow the 50/30/20 rule: 50% for needs, 30% for wants, and 20% for savings/investments. Boost your income on WorkSphere by upgrading to 4-Star or 5-Star PRO ratings!`;
+    }
+    else if (query.includes('hire') || query.includes('developer') || query.includes('designer')) {
+        const top = db.users.filter(u => u.role === 'freelancer' && !u.isBlocked).sort((a,b) => b.stars - a.stars).slice(0, 2);
+        aiReply = `🤖 **SphereAI Top Recommendations**:\n` + top.map(w => `• **${w.name}** (${w.stars}★) - Skills: ${w.skills}`).join('\n') + `\n\nHead to the 'Pick Workers' tab to issue them an official contract!`;
+    } 
+    else if (query.includes('star') || query.includes('boost') || query.includes('rank')) {
+        aiReply = `⭐ **Profile Ranking Optimization**:\nProfiles with 4-Star or 5-Star badges rank at the top of employer searches across Nigeria. Head over to 'Buy Star Ratings' and send transfer to Smart Cash Account (9117828218) to boost your visibility!`;
+    } 
+    else if (query.includes('earn') || query.includes('task') || query.includes('referral')) {
+        aiReply = `💰 **WorkSphere Earning Opportunities**:\n1. Copy your Referral Link to get **₦400** per verified registration.\n2. Complete Sponsored Ad tasks to receive **₦50** instant wallet credits!`;
+    } 
+    else {
+        aiReply = `🤖 **SphereAI Assistant**:\nGreat query! Whether you need career guidance, productivity hacks, or platform assistance, I'm here 24/7. Your inquiry has also been logged with Customer Support.\n\n⏱️ **Please wait for 8 hours to receive a direct response from Customer Support.**`;
+    }
+
+    const supportTicket = {
+        id: 'tkt-' + Date.now(),
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        userMessage: prompt,
+        aiReply: aiReply,
+        adminReply: null,
+        status: 'Awaiting Admin Reply',
+        date: new Date().toLocaleString()
+    };
+
+    db.supportTickets.push(supportTicket);
+    res.json({ success: true, reply: aiReply, ticketId: supportTicket.id });
+});
+
+// Admin Reply to Customer Support Ticket
+app.post('/api/admin/reply-ticket', (req, res) => {
+    const { ticketId, replyMessage } = req.body;
+    const ticket = db.supportTickets.find(t => t.id === ticketId);
+
+    if (!ticket) return res.status(404).json({ success: false, message: 'Support ticket not found.' });
+
+    ticket.adminReply = replyMessage;
+    ticket.status = 'Replied by Admin';
+
+    res.json({ success: true, message: 'Direct reply sent to user support inbox!' });
+});
+
+// AI Professional Bio Generator
+app.post('/api/ai/generate-bio', (req, res) => {
+    const { name, skills } = req.body;
+    const skillList = skills || 'Web Development, Graphic Design';
+    
+    const bio = `Driven & verified professional (${name || 'Freelancer'}) specializing in ${skillList}. Dedicated to delivering high-quality results, on-time project completion, and top-tier client satisfaction on WorkSphere Nigeria.`;
+    
+    res.json({ success: true, bio });
+});
+
+// Withdrawal Request Endpoint (₦10 Minimum Balance Rule)
 app.post('/api/withdraw', (req, res) => {
     const { userId, accountName, bankName, accountNumber, amount } = req.body;
     const user = db.users.find(u => u.id === userId);
@@ -194,11 +268,10 @@ app.post('/api/withdraw', (req, res) => {
     if (reqAmount > maxAllowedWithdrawal) {
         return res.status(400).json({ 
             success: false, 
-            message: `Withdrawal rejected! You must leave at least ₦10 in your account balance. Your maximum withdrawable amount is ₦${maxAllowedWithdrawal.toLocaleString()}.00` 
+            message: `Withdrawal rejected! You must leave at least ₦10 in your account balance. Maximum withdrawable amount is ₦${maxAllowedWithdrawal.toLocaleString()}.00` 
         });
     }
 
-    // Create Withdrawal Request
     const withdrawal = {
         id: 'wd-' + Date.now(),
         userId,
@@ -214,11 +287,11 @@ app.post('/api/withdraw', (req, res) => {
     db.withdrawals.push(withdrawal);
     res.json({ 
         success: true, 
-        message: `Withdrawal request for ₦${reqAmount.toLocaleString()}.00 submitted! Admin will verify and process payment to ${bankName} (${accountNumber}).` 
+        message: `Withdrawal request for ₦${reqAmount.toLocaleString()}.00 submitted! Admin will process payout to ${bankName} (${accountNumber}).` 
     });
 });
 
-// Admin Process Withdrawal Request (Approve/Reject)
+// Admin Verify Withdrawal Request
 app.post('/api/admin/verify-withdrawal', (req, res) => {
     const { withdrawalId, action } = req.body;
     const withdrawal = db.withdrawals.find(w => w.id === withdrawalId);
@@ -232,7 +305,7 @@ app.post('/api/admin/verify-withdrawal', (req, res) => {
             if (user.wallet < withdrawal.amount) {
                 return res.status(400).json({ success: false, message: 'User wallet balance is insufficient.' });
             }
-            user.wallet -= withdrawal.amount; // Deduct funds on approval
+            user.wallet -= withdrawal.amount;
         }
         withdrawal.status = 'Approved & Paid';
 
@@ -252,7 +325,7 @@ app.post('/api/admin/verify-withdrawal', (req, res) => {
     }
 });
 
-// Upload Payment Receipt (Smart Cash Transfer Verification)
+// Upload Smart Cash Payment Receipt
 app.post('/api/upload-receipt', upload.single('receipt'), (req, res) => {
     try {
         const { userId, type, amount, targetId, details } = req.body;
@@ -329,7 +402,7 @@ app.post('/api/admin/verify-payment', (req, res) => {
     }
 });
 
-// Worker Accepts/Declines Job Offer
+// Respond to Job Offer
 app.post('/api/respond-offer', (req, res) => {
     const { offerId, status } = req.body;
     const offer = db.offers.find(o => o.id === offerId);
@@ -339,7 +412,7 @@ app.post('/api/respond-offer', (req, res) => {
     res.json({ success: true, message: `Contract offer has been ${status}.` });
 });
 
-// Worker Submits Work Deliverable File
+// Worker Submit Work Deliverable File
 app.post('/api/submit-work', upload.single('workFile'), (req, res) => {
     const { offerId, workerId, notes } = req.body;
     const offer = db.offers.find(o => o.id === offerId);
@@ -361,7 +434,7 @@ app.post('/api/submit-work', upload.single('workFile'), (req, res) => {
     res.json({ success: true, message: 'Deliverable submitted to Platform Admin for inspection!' });
 });
 
-// Admin Forwards Delivered Work to Employer
+// Admin Deliver Work to Employer
 app.post('/api/admin/deliver-work', (req, res) => {
     const { submissionId } = req.body;
     const sub = db.workSubmissions.find(s => s.id === submissionId);
@@ -374,7 +447,7 @@ app.post('/api/admin/deliver-work', (req, res) => {
     res.json({ success: true, message: 'Work deliverable forwarded to Employer!' });
 });
 
-// Employer Rates Worker
+// Rate Worker
 app.post('/api/rate-worker', (req, res) => {
     const { workerId, offerId, rating } = req.body;
     const worker = db.users.find(u => u.id === workerId);
@@ -388,7 +461,7 @@ app.post('/api/rate-worker', (req, res) => {
     res.json({ success: true, message: 'Worker rating updated!' });
 });
 
-// Admin Toggle User Block/Unblock Status
+// Toggle Account Block
 app.post('/api/admin/toggle-block', (req, res) => {
     const { userId } = req.body;
     const user = db.users.find(u => u.id === userId);
@@ -402,7 +475,7 @@ app.post('/api/admin/toggle-block', (req, res) => {
     });
 });
 
-// Ad Watch Micro-Task
+// Complete Ad Task
 app.post('/api/complete-task', (req, res) => {
     const { userId } = req.body;
     const user = db.users.find(u => u.id === userId);
@@ -419,25 +492,6 @@ app.post('/api/complete-task', (req, res) => {
     });
 
     res.json({ success: true, newBalance: user.wallet, message: '₦50 credited to your wallet balance!' });
-});
-
-// Epic SphereAI Engine
-app.post('/api/ai/chat', (req, res) => {
-    const { prompt } = req.body;
-    const query = (prompt || '').toLowerCase();
-
-    let reply = "I am SphereAI. How can I help you hire, optimize your profile, or earn cash on WorkSphere?";
-
-    if (query.includes('hire') || query.includes('developer') || query.includes('designer')) {
-        const top = db.users.filter(u => u.role === 'freelancer' && !u.isBlocked).sort((a,b) => b.stars - a.stars).slice(0, 2);
-        reply = `🤖 **SphereAI Worker Recommendations**:\n` + top.map(w => `• **${w.name}** (${w.stars}★) - Skills: ${w.skills}`).join('\n') + `\n\nNavigate to 'Pick Workers' to issue contract letters!`;
-    } else if (query.includes('star') || query.includes('boost')) {
-        reply = "⭐ **Profile Ranking Tip**:\n4-Star and 5-Star profiles appear at the top of employer searches. Head over to 'Buy Star Ratings' and send transfer to Smart Cash Account (9117828218) to rank higher!";
-    } else if (query.includes('earn') || query.includes('task') || query.includes('referral')) {
-        reply = "💰 **Earning Tips**:\n1. Share your Referral Link to get **₦400** per registration.\n2. Complete Sponsored Ad tasks to receive **₦50** instant wallet credits!";
-    }
-
-    res.json({ success: true, reply });
 });
 
 // Smart Catch-all Route to serve Frontend SPA
@@ -461,3 +515,4 @@ app.listen(PORT, () => {
     console.log(`🔑 Admin Access Password: admin@web.org`);
     console.log(`====================================================`);
 });
+```
