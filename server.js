@@ -62,8 +62,8 @@ let db = {
         }
     ],
     jobs: [
-        { id: 'j1', title: 'Fintech Mobile App Frontend', type: 'Full-Time', budget: '₦250,000/mo', description: 'Looking for an expert React Native developer to build clean financial dashboards.' },
-        { id: 'j2', title: 'Brand Identity & Logo Redesign', type: 'Half-Time', budget: '₦120,000/mo', description: 'Need clean brand design, logo variations, and social media media kits.' }
+        { id: 'j1', title: 'Fintech Mobile App Frontend', type: 'Full-Time', budget: '₦25,000/mo', description: 'Looking for an expert React Native developer to build clean financial dashboards.' },
+        { id: 'j2', title: 'Brand Identity & Logo Redesign', type: 'Half-Time', budget: '₦12,000/mo', description: 'Need clean brand design, logo variations, and social media media kits.' }
     ],
     offers: [],           // Contract letters
     payments: [],         // Smart Cash receipts
