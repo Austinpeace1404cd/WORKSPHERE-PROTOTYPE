@@ -20,7 +20,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 app.use('/uploads', express.static(uploadDir));
 
-// Multer Storage Configuration
+// Multer Disk Storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_'))
@@ -34,6 +34,7 @@ let db = {
             id: '1', 
             name: 'Chidi Okeke', 
             email: 'chidi@dev.ng', 
+            password: 'password123',
             role: 'freelancer', 
             bio: 'Senior Full-Stack Node & React Developer based in Lagos.', 
             skills: 'React, Node.js, Tailwind, PostgreSQL', 
@@ -48,6 +49,7 @@ let db = {
             id: '2', 
             name: 'Amina Bello', 
             email: 'amina@design.ng', 
+            password: 'password123',
             role: 'freelancer', 
             bio: 'Lead UI/UX & Brand Identity Designer specialized in Fintech SaaS.', 
             skills: 'Figma, UI/UX, Mobile Apps, Design Systems', 
@@ -63,10 +65,11 @@ let db = {
         { id: 'j1', title: 'Fintech Mobile App Frontend', type: 'Full-Time', budget: '₦250,000/mo', description: 'Looking for an expert React Native developer to build clean financial dashboards.' },
         { id: 'j2', title: 'Brand Identity & Logo Redesign', type: 'Half-Time', budget: '₦120,000/mo', description: 'Need clean brand design, logo variations, and social media media kits.' }
     ],
-    offers: [],           // Employment contract letters
-    payments: [],         // Pending & verified Smart Cash transfer receipts
-    workSubmissions: [],  // Delivered work files
-    transactions: [],     // Financial ledger
+    offers: [],           // Contract letters
+    payments: [],         // Smart Cash receipts
+    withdrawals: [],      // User withdrawal requests
+    workSubmissions: [],  // Submitted deliverables
+    transactions: [],     // Audit ledger
     platformRevenue: 0,
     bankDetails: {
         accountNumber: "9117828218",
@@ -82,13 +85,13 @@ app.get('/api/state', (req, res) => {
     res.json(db);
 });
 
-// User Registration with File Uploads
+// User Registration with Password & File Uploads
 app.post('/api/register', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'workImg', maxCount: 1 }]), (req, res) => {
     try {
-        const { name, email, role, bio, skills, refCodeUsed } = req.body;
+        const { name, email, password, role, bio, skills, refCodeUsed } = req.body;
 
-        if (!name || !email) {
-            return res.status(400).json({ success: false, message: 'Name and Email are required!' });
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Name, Email, and Password are required!' });
         }
 
         const existing = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
@@ -110,6 +113,7 @@ app.post('/api/register', upload.fields([{ name: 'photo', maxCount: 1 }, { name:
             id: Date.now().toString(),
             name,
             email: email.toLowerCase(),
+            password: password,
             role: role || 'freelancer',
             bio: bio || '',
             skills: skills || '',
@@ -122,7 +126,7 @@ app.post('/api/register', upload.fields([{ name: 'photo', maxCount: 1 }, { name:
             referredBy: refCodeUsed || null
         };
 
-        // Referral Reward: ₦400 credited to Referrer
+        // Referral Reward: Credit ₦400 to Referrer
         if (refCodeUsed) {
             const referrer = db.users.find(u => u.refCode === refCodeUsed.trim().toUpperCase());
             if (referrer) {
@@ -139,13 +143,13 @@ app.post('/api/register', upload.fields([{ name: 'photo', maxCount: 1 }, { name:
         }
 
         db.users.push(newUser);
-        res.json({ success: true, user: newUser, message: 'Registration successful!' });
+        res.json({ success: true, user: newUser, message: 'Registration successful! You can now log in anytime.' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// User & Admin Login
+// User & Admin Login Route
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -162,11 +166,90 @@ app.post('/api/login', (req, res) => {
         return res.status(404).json({ success: false, message: 'User not found! Please register first.' });
     }
 
+    if (user.password && user.password !== password) {
+        return res.status(400).json({ success: false, message: 'Incorrect Password! Please try again.' });
+    }
+
     if (user.isBlocked) {
         return res.status(403).json({ success: false, message: 'ACCOUNT SUSPENDED: Your account has been blocked for terms violations.' });
     }
 
-    res.json({ success: true, user });
+    res.json({ success: true, user, message: 'Welcome back!' });
+});
+
+// WITHDRAWAL SYSTEM (Rule: Must leave at least ₦10 in balance)
+app.post('/api/withdraw', (req, res) => {
+    const { userId, accountName, bankName, accountNumber, amount } = req.body;
+    const user = db.users.find(u => u.id === userId);
+
+    if (!user) return res.status(404).json({ success: false, message: 'User record not found.' });
+
+    const reqAmount = parseFloat(amount) || 0;
+    const maxAllowedWithdrawal = Math.max(0, user.wallet - 10);
+
+    if (reqAmount <= 0) {
+        return res.status(400).json({ success: false, message: 'Please enter a valid withdrawal amount!' });
+    }
+
+    if (reqAmount > maxAllowedWithdrawal) {
+        return res.status(400).json({ 
+            success: false, 
+            message: `Withdrawal rejected! You must leave at least ₦10 in your account balance. Your maximum withdrawable amount is ₦${maxAllowedWithdrawal.toLocaleString()}.00` 
+        });
+    }
+
+    // Create Withdrawal Request
+    const withdrawal = {
+        id: 'wd-' + Date.now(),
+        userId,
+        userName: user.name,
+        accountName,
+        bankName,
+        accountNumber,
+        amount: reqAmount,
+        status: 'Pending Admin Approval',
+        date: new Date().toLocaleDateString()
+    };
+
+    db.withdrawals.push(withdrawal);
+    res.json({ 
+        success: true, 
+        message: `Withdrawal request for ₦${reqAmount.toLocaleString()}.00 submitted! Admin will verify and process payment to ${bankName} (${accountNumber}).` 
+    });
+});
+
+// Admin Process Withdrawal Request (Approve/Reject)
+app.post('/api/admin/verify-withdrawal', (req, res) => {
+    const { withdrawalId, action } = req.body;
+    const withdrawal = db.withdrawals.find(w => w.id === withdrawalId);
+
+    if (!withdrawal) return res.status(404).json({ success: false, message: 'Withdrawal request not found.' });
+
+    const user = db.users.find(u => u.id === withdrawal.userId);
+
+    if (action === 'Approve') {
+        if (user) {
+            if (user.wallet < withdrawal.amount) {
+                return res.status(400).json({ success: false, message: 'User wallet balance is insufficient.' });
+            }
+            user.wallet -= withdrawal.amount; // Deduct funds on approval
+        }
+        withdrawal.status = 'Approved & Paid';
+
+        db.transactions.push({
+            id: 'tx-' + Date.now(),
+            userId: withdrawal.userId,
+            userName: withdrawal.userName,
+            type: `Bank Withdrawal Payout (${withdrawal.bankName})`,
+            amount: `-₦${withdrawal.amount.toLocaleString()}.00`,
+            date: new Date().toLocaleDateString()
+        });
+
+        res.json({ success: true, message: 'Withdrawal approved & funds deducted from user wallet!' });
+    } else {
+        withdrawal.status = 'Rejected';
+        res.json({ success: true, message: 'Withdrawal request rejected.' });
+    }
 });
 
 // Upload Payment Receipt (Smart Cash Transfer Verification)
@@ -357,9 +440,17 @@ app.post('/api/ai/chat', (req, res) => {
     res.json({ success: true, reply });
 });
 
-// Catch-all route to serve Frontend SPA
+// Smart Catch-all Route to serve Frontend SPA
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const publicPath = path.join(__dirname, 'public', 'index.html');
+    const rootPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(publicPath)) {
+        res.sendFile(publicPath);
+    } else if (fs.existsSync(rootPath)) {
+        res.sendFile(rootPath);
+    } else {
+        res.status(404).send("WorkSphere API Active. Please check index.html file placement.");
+    }
 });
 
 // Start Server
