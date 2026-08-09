@@ -1,7 +1,7 @@
 {
   "name": "worksphere-app",
-  "version": "3.0.0",
-  "description": "WorkSphere Nigeria - Full-Stack Freelance Marketplace with Theme Switching",
+  "version": "4.0.0",
+  "description": "WorkSphere Nigeria - Full-Stack Platform with Persistence & Withdrawals",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
