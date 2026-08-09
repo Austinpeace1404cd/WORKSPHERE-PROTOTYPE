@@ -39,7 +39,7 @@
 
         <div class="flex items-center gap-3">
             <button onclick="toggleAiModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs px-3 py-2 rounded-full font-bold shadow-md hover:opacity-90 transition flex items-center gap-2">
-                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> <span class="hidden md:inline">SphereAI</span>
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> <span class="hidden md:inline">SphereAI Support</span>
             </button>
 
             <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Theme" class="p-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-amber-300 rounded-full font-bold text-sm w-9 h-9 flex items-center justify-center transition shadow-sm">
@@ -163,6 +163,13 @@
                     <div id="freelancerOffersList" class="space-y-4"></div>
                 </div>
 
+                <!-- PANEL: USER SUPPORT INBOX -->
+                <div id="panel-support-inbox" class="dashboard-panel hidden space-y-4">
+                    <h2 class="text-2xl font-bold dark:text-white"><i class="fa-solid fa-headset text-indigo-600 dark:text-indigo-400 mr-2"></i>My Customer Support Inbox</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">View live responses to your inquiries directly from Platform Management.</p>
+                    <div id="userSupportInbox" class="space-y-4"></div>
+                </div>
+
                 <!-- PANEL: EMPLOYER BROWSE -->
                 <div id="panel-employer-browse" class="dashboard-panel hidden space-y-4">
                     <h2 class="text-2xl font-bold dark:text-white">Pick & Hire Verified Talent</h2>
@@ -222,6 +229,12 @@
                             <span class="text-slate-500 dark:text-slate-400 text-xs font-bold">Pending Payments</span>
                             <h3 id="adminPendingPayments" class="text-3xl font-black text-amber-500">0</h3>
                         </div>
+                    </div>
+
+                    <!-- LIVE SUPPORT TICKETS & MESSAGES QUEUE -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6 shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-indigo-600 dark:text-indigo-400"><i class="fa-solid fa-comments mr-2"></i>Live Customer Support & AI Escalated Tickets</h3>
+                        <div id="adminSupportDeskQueue" class="space-y-4"></div>
                     </div>
 
                     <!-- PENDING WITHDRAWALS QUEUE -->
@@ -318,7 +331,10 @@
 
                 <div id="freelancerExtraFields" class="space-y-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Bio / Skills Description</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Bio / Skills Description</label>
+                            <button type="button" onclick="generateAiBio()" class="text-[10px] bg-indigo-50 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded font-bold hover:bg-indigo-100"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>AI Generate Bio</button>
+                        </div>
                         <textarea id="regBio" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2 text-sm outline-none h-16"></textarea>
                     </div>
                     <div>
@@ -422,24 +438,35 @@
         </div>
     </div>
 
-    <!-- MODAL: SPHERE AI -->
+    <!-- MODAL: SPHERE AI ENGINE & SUPPORT CHAT -->
     <div id="modal-ai" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 relative flex flex-col h-[500px]">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 relative flex flex-col h-[520px]">
             <button onclick="toggleAiModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
             
-            <div class="flex items-center gap-2 mb-4 border-b dark:border-slate-700 pb-3">
+            <div class="flex items-center gap-2 mb-3 border-b dark:border-slate-700 pb-3">
                 <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                <h2 class="text-lg font-bold dark:text-white">SphereAI Nigeria - Smart Assistant</h2>
+                <div>
+                    <h2 class="text-base font-bold dark:text-white">SphereAI Pro & Support Desk</h2>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 block">Ask daily living advice, tips, or submit customer support complaints</span>
+                </div>
             </div>
 
-            <div id="aiChatBox" class="flex-1 overflow-y-auto space-y-3 p-2 bg-slate-50 dark:bg-slate-900 rounded-xl mb-3 text-xs">
+            <!-- AI QUICK PROMPT PILLS -->
+            <div class="flex gap-1.5 overflow-x-auto pb-2 text-[10px] whitespace-nowrap mb-2">
+                <button onclick="quickAiPrompt('Give me a health and fitness daily living tip')" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2.5 py-1 rounded-full">💡 Health Tip</button>
+                <button onclick="quickAiPrompt('How do I manage money and budget daily?')" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2.5 py-1 rounded-full">💰 Money Advice</button>
+                <button onclick="quickAiPrompt('How can I boost my 5-star rating fast?')" class="bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2.5 py-1 rounded-full">⭐ Rating Help</button>
+                <button onclick="quickAiPrompt('I have a complaint regarding a payment delay')" class="bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-full">🚨 Submit Complaint</button>
+            </div>
+
+            <div id="aiChatBox" class="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl mb-3 text-xs">
                 <div class="bg-indigo-100 dark:bg-indigo-900/80 text-indigo-900 dark:text-indigo-200 p-3 rounded-xl max-w-[85%]">
-                    Hello! I am SphereAI. Ask me to match you with top talent, suggest profile improvements, or explain earning options!
+                    Hello! I am SphereAI. Ask me anything about daily life tips, money advice, or submit support complaints!
                 </div>
             </div>
 
             <div class="flex gap-2">
-                <input type="text" id="aiInput" placeholder="Ask AI anything..." class="flex-1 border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl p-2.5 text-xs outline-none">
+                <input type="text" id="aiInput" placeholder="Ask AI advice or type support complaint..." class="flex-1 border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl p-2.5 text-xs outline-none">
                 <button onclick="sendAiQuery()" class="bg-indigo-600 text-white font-bold px-4 rounded-xl text-xs"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -448,7 +475,7 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let currentUser = JSON.parse(localStorage.getItem('worksphere_user')) || null;
-        let localState = { users: [], jobs: [], offers: [], payments: [], withdrawals: [], workSubmissions: [], platformRevenue: 0 };
+        let localState = { users: [], jobs: [], offers: [], payments: [], withdrawals: [], supportTickets: [], workSubmissions: [], platformRevenue: 0 };
 
         // THEME LOGIC
         function initTheme() {
@@ -548,6 +575,23 @@
             document.getElementById('regRole').value = role;
             document.getElementById('freelancerExtraFields').style.display = role === 'freelancer' ? 'block' : 'none';
             openAuthModal('register');
+        }
+
+        async function generateAiBio() {
+            const name = document.getElementById('regName').value || 'Freelancer';
+            const skills = document.getElementById('regSkills').value;
+            
+            try {
+                const res = await fetch('/api/ai/generate-bio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, skills })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('regBio').value = data.bio;
+                }
+            } catch(e) { console.error('Bio Error', e); }
         }
 
         async function handleLoginSubmit(e) {
@@ -677,6 +721,7 @@
                     <button onclick="showPanel('freelancer-jobs')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-briefcase"></i> Explore Jobs</button>
                     <button onclick="showPanel('freelancer-stars')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-star text-amber-500"></i> Buy Star Ratings</button>
                     <button onclick="showPanel('freelancer-offers')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-envelope"></i> Job Requests</button>
+                    <button onclick="showPanel('support-inbox')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-headset text-indigo-500"></i> Support Inbox</button>
                     <button onclick="showPanel('tasks')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-coins text-emerald-600"></i> Referral & Ad Tasks</button>
                 `;
                 showPanel('freelancer-jobs');
@@ -684,6 +729,7 @@
                 menu.innerHTML = `
                     <button onclick="showPanel('employer-browse')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-users"></i> Pick Workers</button>
                     <button onclick="showPanel('employer-status')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-paper-plane"></i> Sent Letters</button>
+                    <button onclick="showPanel('support-inbox')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"><i class="fa-solid fa-headset text-indigo-500"></i> Support Inbox</button>
                 `;
                 showPanel('employer-browse');
             } else if (u.role === 'admin') {
@@ -720,6 +766,32 @@
                         </div>
                     </div>
                 `).join('');
+            }
+
+            // Render User Support Inbox
+            const inboxList = document.getElementById('userSupportInbox');
+            if (inboxList && currentUser && localState.supportTickets) {
+                const myTickets = localState.supportTickets.filter(t => t.userId === currentUser.id);
+                if (myTickets.length === 0) {
+                    inboxList.innerHTML = `<p class="text-xs text-slate-400">No support tickets or inquiry history found.</p>`;
+                } else {
+                    inboxList.innerHTML = myTickets.map(t => `
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border dark:border-slate-700 space-y-2 text-xs shadow-sm">
+                            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">Ticket ID: ${t.id}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-bold ${t.adminReply ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300':'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'}">${t.status}</span>
+                            </div>
+                            <p class="dark:text-slate-200"><strong>Your Question:</strong> "${t.userMessage}"</p>
+                            <p class="text-slate-500 dark:text-slate-400"><strong>AI Automated Response:</strong> "${t.aiReply}"</p>
+                            ${t.adminReply ? `
+                                <div class="bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 p-2.5 rounded-lg mt-2">
+                                    <span class="font-bold text-indigo-700 dark:text-indigo-300 block mb-1"><i class="fa-solid fa-shield-cat mr-1"></i>Official Direct Reply from Platform Management:</span>
+                                    <p class="text-slate-800 dark:text-slate-100">${t.adminReply}</p>
+                                </div>
+                            `:''}
+                        </div>
+                    `).join('');
+                }
             }
 
             // Render Workers
@@ -814,6 +886,32 @@
                 document.getElementById('adminTotalUsers').innerText = localState.users ? localState.users.length : 0;
                 document.getElementById('adminPendingPayments').innerText = localState.payments ? localState.payments.filter(p => p.status === 'Pending Verification').length : 0;
 
+                // Admin Live Customer Support Queue
+                const deskQueue = document.getElementById('adminSupportDeskQueue');
+                if (deskQueue && localState.supportTickets) {
+                    if (localState.supportTickets.length === 0) {
+                        deskQueue.innerHTML = `<p class="text-xs text-slate-400">No support tickets or inquiries received yet.</p>`;
+                    } else {
+                        deskQueue.innerHTML = localState.supportTickets.map(t => `
+                            <div class="border dark:border-slate-700 p-4 rounded-xl text-xs bg-slate-50 dark:bg-slate-900 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-indigo-600 dark:text-indigo-400">${t.userName} (${t.userEmail})</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded font-bold ${t.adminReply ? 'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">${t.status}</span>
+                                </div>
+                                <p class="dark:text-slate-200"><strong>User Question/Complaint:</strong> "${t.userMessage}"</p>
+                                ${t.adminReply ? `
+                                    <p class="text-emerald-600 font-bold">Your Reply: "${t.adminReply}"</p>
+                                `:`
+                                    <div class="flex gap-2 pt-2">
+                                        <input type="text" id="adminReplyInput_${t.id}" placeholder="Type direct reply to user..." class="flex-1 border dark:border-slate-600 dark:bg-slate-800 p-2 rounded outline-none dark:text-white">
+                                        <button onclick="sendAdminReplyTicket('${t.id}')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded">Send Reply</button>
+                                    </div>
+                                `}
+                            </div>
+                        `).join('');
+                    }
+                }
+
                 // Pending Withdrawals Queue
                 const wdQueue = document.getElementById('adminWithdrawalsQueue');
                 if (wdQueue && localState.withdrawals) {
@@ -897,6 +995,23 @@
                     `).join('');
                 }
             }
+        }
+
+        async function sendAdminReplyTicket(ticketId) {
+            const input = document.getElementById(`adminReplyInput_${ticketId}`);
+            const replyMessage = input ? input.value : '';
+            if (!replyMessage) return alert("Please type a reply message!");
+
+            try {
+                const res = await fetch('/api/admin/reply-ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketId, replyMessage })
+                });
+                const data = await res.json();
+                alert(data.message);
+                fetchGlobalState();
+            } catch(err) { alert("Ticket Reply Error: " + err.message); }
         }
 
         function triggerPaymentModal(type, amount, targetId) {
@@ -1065,6 +1180,11 @@
             el.classList.toggle('flex');
         }
 
+        function quickAiPrompt(text) {
+            document.getElementById('aiInput').value = text;
+            sendAiQuery();
+        }
+
         async function sendAiQuery() {
             const input = document.getElementById('aiInput');
             const box = document.getElementById('aiChatBox');
@@ -1078,11 +1198,12 @@
                 const res = await fetch('/api/ai/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: val })
+                    body: JSON.stringify({ userId: currentUser ? currentUser.id : null, prompt: val })
                 });
                 const data = await res.json();
                 box.innerHTML += `<div class="bg-indigo-100 dark:bg-indigo-900/80 text-indigo-900 dark:text-indigo-200 p-2.5 rounded-xl max-w-[85%]">${data.reply}</div>`;
                 box.scrollTop = box.scrollHeight;
+                fetchGlobalState();
             } catch(err) { box.innerHTML += `<div class="text-red-500 p-2 text-xs">AI Connection Error</div>`; }
         }
 
