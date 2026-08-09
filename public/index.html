@@ -14,12 +14,10 @@
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
 
-    <!-- Tailwind CSS with Dark Mode Configuration -->
+    <!-- Tailwind CSS with Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
 
     <!-- FontAwesome Icons -->
@@ -40,18 +38,17 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <!-- AI ASSISTANT BUTTON -->
             <button onclick="toggleAiModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs px-3 py-2 rounded-full font-bold shadow-md hover:opacity-90 transition flex items-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> <span class="hidden md:inline">SphereAI</span>
             </button>
 
-            <!-- THEME TOGGLE BUTTON -->
             <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle Light/Dark Theme" class="p-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-amber-300 rounded-full font-bold text-sm w-9 h-9 flex items-center justify-center transition shadow-sm">
                 <i class="fa-solid fa-moon"></i>
             </button>
 
             <div id="topNavUser" class="flex items-center gap-2">
-                <button onclick="showModal('modal-auth')" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600">Login / Register</button>
+                <button onclick="openAuthModal('login')" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600">Login</button>
+                <button onclick="openAuthModal('register')" class="bg-indigo-600 text-white text-xs px-3 py-2 rounded-lg font-bold">Register</button>
                 <button onclick="adminLoginPrompt()" class="bg-slate-900 dark:bg-slate-700 text-white text-xs px-3 py-2 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-shield-halved mr-1"></i> Admin
                 </button>
@@ -62,7 +59,7 @@
     <!-- MAIN APP CONTAINER -->
     <main class="container mx-auto px-4 py-6 max-w-7xl">
 
-        <!-- GOOGLE ADSENSE SPONSORED PLACEHOLDER -->
+        <!-- GOOGLE ADSENSE BANNER -->
         <div class="mb-6 p-4 bg-slate-200 dark:bg-slate-800 border border-dashed border-slate-400 dark:border-slate-600 rounded-xl text-center text-xs text-slate-500 dark:text-slate-400 overflow-hidden">
             <span>[ GOOGLE ADSENSE SPONSORED BANNER PLACEHOLDER ]</span>
             <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-0000000000000000" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins>
@@ -96,12 +93,20 @@
                     </div>
                 </div>
 
-                <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl">
-                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 block">Wallet Balance</span>
-                    <span id="userWalletBalance" class="text-xl font-extrabold text-emerald-700 dark:text-emerald-400">₦0.00</span>
-                    <button onclick="showPanel('tasks')" class="mt-2 text-xs bg-emerald-600 text-white font-bold w-full py-1.5 rounded-lg hover:bg-emerald-700">
-                        <i class="fa-solid fa-coins mr-1"></i> Earn Cash (Ad Tasks)
-                    </button>
+                <!-- WALLET & WITHDRAWAL BOX -->
+                <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl space-y-2">
+                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 block">Total Wallet Balance</span>
+                    <span id="userWalletBalance" class="text-2xl font-black text-emerald-700 dark:text-emerald-400 block">₦0.00</span>
+                    <span id="maxWithdrawableText" class="text-[10px] text-slate-500 dark:text-slate-400 block">Max withdrawable: ₦0.00 (₦10 reserve)</span>
+                    
+                    <div class="flex gap-2 pt-1">
+                        <button onclick="showModal('modal-withdraw')" class="flex-1 text-xs bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700">
+                            <i class="fa-solid fa-money-bill-transfer mr-1"></i> Withdraw
+                        </button>
+                        <button onclick="showPanel('tasks')" class="flex-1 text-xs bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">
+                            <i class="fa-solid fa-coins mr-1"></i> Earn More
+                        </button>
+                    </div>
                 </div>
 
                 <nav id="sidebarMenu" class="space-y-1"></nav>
@@ -113,7 +118,7 @@
                 </div>
             </aside>
 
-            <!-- MAIN CONTENT AREA -->
+            <!-- MAIN SECTION -->
             <section class="md:col-span-3 space-y-6">
 
                 <!-- PANEL: FREELANCER JOBS -->
@@ -210,13 +215,19 @@
                             <h3 id="adminRevenue" class="text-3xl font-black text-emerald-600 dark:text-emerald-400">₦0.00</h3>
                         </div>
                         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-sm">
-                            <span class="text-slate-500 dark:text-slate-400 text-xs font-bold">Total Users</span>
+                            <span class="text-slate-500 dark:text-slate-400 text-xs font-bold">Total Registered Users</span>
                             <h3 id="adminTotalUsers" class="text-3xl font-black text-indigo-600 dark:text-indigo-400">0</h3>
                         </div>
                         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-sm">
                             <span class="text-slate-500 dark:text-slate-400 text-xs font-bold">Pending Payments</span>
                             <h3 id="adminPendingPayments" class="text-3xl font-black text-amber-500">0</h3>
                         </div>
+                    </div>
+
+                    <!-- PENDING WITHDRAWALS QUEUE -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6 shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-money-check-dollar mr-2"></i>Pending Bank Withdrawal Requests</h3>
+                        <div id="adminWithdrawalsQueue" class="space-y-3"></div>
                     </div>
 
                     <!-- PENDING PAYMENT VERIFICATION QUEUE -->
@@ -240,6 +251,7 @@
                                     <tr>
                                         <th class="p-2">User</th>
                                         <th class="p-2">Role</th>
+                                        <th class="p-2">Wallet</th>
                                         <th class="p-2">Rating</th>
                                         <th class="p-2">Status</th>
                                         <th class="p-2">Action</th>
@@ -255,18 +267,36 @@
         </div>
     </main>
 
-    <!-- FLOATING CORNER THEME TOGGLE BUTTON -->
+    <!-- FLOATING THEME TOGGLE BUTTON -->
     <button onclick="toggleTheme()" class="fixed bottom-6 right-6 bg-indigo-600 text-white dark:bg-amber-400 dark:text-slate-900 p-3.5 rounded-full shadow-2xl z-50 transition transform hover:scale-110 flex items-center justify-center font-bold text-lg" title="Change Theme">
         <i id="floatingThemeIcon" class="fa-solid fa-moon"></i>
     </button>
 
-    <!-- MODAL: REGISTRATION -->
+    <!-- MODAL: LOGIN / REGISTER AUTHENTICATION -->
     <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button onclick="hideModal('modal-auth')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h2 id="authModalTitle" class="text-2xl font-bold mb-4 dark:text-white">Create Account</h2>
+            
+            <div class="flex gap-4 border-b dark:border-slate-700 pb-3 mb-4">
+                <button onclick="switchAuthTab('login')" id="tabBtnLogin" class="font-bold text-lg text-indigo-600 border-b-2 border-indigo-600 pb-1">Account Login</button>
+                <button onclick="switchAuthTab('register')" id="tabBtnRegister" class="font-bold text-lg text-slate-400 pb-1">Register New User</button>
+            </div>
 
-            <form onsubmit="handleRegistrationSubmit(event)" class="space-y-3">
+            <!-- LOGIN FORM -->
+            <form id="authLoginForm" onsubmit="handleLoginSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Email Address</label>
+                    <input type="email" id="loginEmail" required class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Password</label>
+                    <input type="password" id="loginPassword" required class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700">Login to Account</button>
+            </form>
+
+            <!-- REGISTRATION FORM -->
+            <form id="authRegisterForm" onsubmit="handleRegistrationSubmit(event)" class="space-y-3 hidden">
                 <input type="hidden" id="regRole" value="freelancer">
                 
                 <div>
@@ -276,6 +306,10 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Email Address</label>
                     <input type="email" id="regEmail" required class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Password</label>
+                    <input type="password" id="regPassword" required placeholder="Choose a password" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Referral Code (Optional)</label>
@@ -301,7 +335,37 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700">Register Account</button>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700">Complete Registration</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: BANK WITHDRAWAL -->
+    <div id="modal-withdraw" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+            <button onclick="hideModal('modal-withdraw')" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h2 class="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Withdraw Funds to Bank</h2>
+            <p class="text-xs text-amber-600 dark:text-amber-400 font-bold mb-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Note: At least ₦10 MUST remain in your account balance.</p>
+
+            <form onsubmit="handleWithdrawalSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Account Name</label>
+                    <input type="text" id="wdAccountName" required placeholder="e.g. John Doe" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Bank Name</label>
+                    <input type="text" id="wdBankName" required placeholder="e.g. GTBank, Kuda, OPay, Zenith" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Account Number</label>
+                    <input type="number" id="wdAccountNumber" required placeholder="10 digit account number" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Withdrawal Amount (₦)</label>
+                    <input type="number" id="wdAmount" required placeholder="Enter amount" class="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2.5 text-sm outline-none">
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700">Submit Payout Request</button>
             </form>
         </div>
     </div>
@@ -381,12 +445,12 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC WITH THEME TOGGLE SUPPORT -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         let currentUser = JSON.parse(localStorage.getItem('worksphere_user')) || null;
-        let localState = { users: [], jobs: [], offers: [], payments: [], workSubmissions: [], platformRevenue: 0 };
+        let localState = { users: [], jobs: [], offers: [], payments: [], withdrawals: [], workSubmissions: [], platformRevenue: 0 };
 
-        // THEME TOGGLE LOGIC
+        // THEME LOGIC
         function initTheme() {
             const savedTheme = localStorage.getItem('worksphere_theme') || 'light';
             if (savedTheme === 'dark') {
@@ -428,6 +492,7 @@
                 const res = await fetch('/api/state');
                 localState = await res.json();
                 
+                // Session Persistence Update
                 if (currentUser && currentUser.id !== 'admin') {
                     const freshUser = localState.users.find(u => u.id === currentUser.id);
                     if (freshUser) {
@@ -449,16 +514,64 @@
             const refParam = urlParams.get('ref');
             if (refParam) {
                 document.getElementById('regRefCode').value = refParam;
-                openRegistration('freelancer');
+                openAuthModal('register');
             }
             fetchGlobalState();
             setInterval(fetchGlobalState, 3000);
         };
 
+        function openAuthModal(tab) {
+            switchAuthTab(tab);
+            showModal('modal-auth');
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('authLoginForm');
+            const regForm = document.getElementById('authRegisterForm');
+            const tabBtnLogin = document.getElementById('tabBtnLogin');
+            const tabBtnRegister = document.getElementById('tabBtnRegister');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabBtnLogin.className = "font-bold text-lg text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 pb-1";
+                tabBtnRegister.className = "font-bold text-lg text-slate-400 pb-1";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabBtnRegister.className = "font-bold text-lg text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 pb-1";
+                tabBtnLogin.className = "font-bold text-lg text-slate-400 pb-1";
+            }
+        }
+
         function openRegistration(role) {
             document.getElementById('regRole').value = role;
             document.getElementById('freelancerExtraFields').style.display = role === 'freelancer' ? 'block' : 'none';
-            showModal('modal-auth');
+            openAuthModal('register');
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('worksphere_user', JSON.stringify(currentUser));
+                    hideModal('modal-auth');
+                    switchView('dashboard');
+                    setupSidebar();
+                    alert(data.message);
+                } else { alert(data.message); }
+            } catch(err) { alert("Login error: " + err.message); }
         }
 
         async function handleRegistrationSubmit(e) {
@@ -467,6 +580,7 @@
             formData.append('role', document.getElementById('regRole').value);
             formData.append('name', document.getElementById('regName').value);
             formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
             formData.append('refCodeUsed', document.getElementById('regRefCode').value);
             formData.append('bio', document.getElementById('regBio').value);
             formData.append('skills', document.getElementById('regSkills').value);
@@ -489,6 +603,32 @@
                     alert(data.message);
                 } else { alert(data.message); }
             } catch(err) { alert("Registration error: " + err.message); }
+        }
+
+        async function handleWithdrawalSubmit(e) {
+            e.preventDefault();
+            const accountName = document.getElementById('wdAccountName').value;
+            const bankName = document.getElementById('wdBankName').value;
+            const accountNumber = document.getElementById('wdAccountNumber').value;
+            const amount = parseFloat(document.getElementById('wdAmount').value);
+
+            try {
+                const res = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        accountName, bankName, accountNumber, amount
+                    })
+                });
+                const data = await res.json();
+                alert(data.message);
+
+                if (data.success) {
+                    hideModal('modal-withdraw');
+                    fetchGlobalState();
+                }
+            } catch(err) { alert("Withdrawal Error: " + err.message); }
         }
 
         async function adminLoginPrompt() {
@@ -523,7 +663,11 @@
             document.getElementById('sidebarName').innerText = u.name;
             document.getElementById('sidebarRole').innerText = u.role;
             document.getElementById('sidebarImg').src = u.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250';
-            document.getElementById('userWalletBalance').innerText = `₦${(u.wallet || 0).toLocaleString()}.00`;
+            
+            const bal = u.wallet || 0;
+            const maxWd = Math.max(0, bal - 10);
+            document.getElementById('userWalletBalance').innerText = `₦${bal.toLocaleString()}.00`;
+            document.getElementById('maxWithdrawableText').innerText = `Max withdrawable: ₦${maxWd.toLocaleString()}.00 (₦10 reserve)`;
 
             const menu = document.getElementById('sidebarMenu');
             menu.innerHTML = '';
@@ -664,12 +808,35 @@
                 }
             }
 
-            // Admin Control
+            // Admin Control Dashboard
             if (currentUser && currentUser.role === 'admin') {
                 document.getElementById('adminRevenue').innerText = `₦${(localState.platformRevenue || 0).toLocaleString()}.00`;
                 document.getElementById('adminTotalUsers').innerText = localState.users ? localState.users.length : 0;
                 document.getElementById('adminPendingPayments').innerText = localState.payments ? localState.payments.filter(p => p.status === 'Pending Verification').length : 0;
 
+                // Pending Withdrawals Queue
+                const wdQueue = document.getElementById('adminWithdrawalsQueue');
+                if (wdQueue && localState.withdrawals) {
+                    const pendingWd = localState.withdrawals.filter(w => w.status === 'Pending Admin Approval');
+                    if (pendingWd.length === 0) {
+                        wdQueue.innerHTML = `<p class="text-xs text-slate-400">No pending bank withdrawal requests.</p>`;
+                    } else {
+                        wdQueue.innerHTML = pendingWd.map(w => `
+                            <div class="border dark:border-slate-700 p-3 rounded-xl flex justify-between items-center text-xs bg-slate-50 dark:bg-slate-900">
+                                <div>
+                                    <span class="font-bold block dark:text-white">${w.userName} - ₦${w.amount.toLocaleString()}.00</span>
+                                    <p class="text-[11px] text-slate-600 dark:text-slate-300">Bank: <strong>${w.bankName}</strong> | Account #: <strong class="font-mono">${w.accountNumber}</strong> (${w.accountName})</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="verifyWithdrawal('${w.id}', 'Approve')" class="bg-emerald-600 text-white px-3 py-1 rounded font-bold">Approve Payout</button>
+                                    <button onclick="verifyWithdrawal('${w.id}', 'Reject')" class="bg-red-500 text-white px-3 py-1 rounded font-bold">Reject</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                // Pending Receipts Queue
                 const rQueue = document.getElementById('adminReceiptsQueue');
                 if (rQueue && localState.payments) {
                     const pending = localState.payments.filter(p => p.status === 'Pending Verification');
@@ -691,6 +858,7 @@
                     }
                 }
 
+                // Work Deliverables Queue
                 const wQueue = document.getElementById('adminWorkQueue');
                 if (wQueue && localState.workSubmissions) {
                     const pendingWork = localState.workSubmissions.filter(s => s.status === 'Submitted to Admin');
@@ -710,12 +878,14 @@
                     }
                 }
 
+                // All Users Table
                 const uTable = document.getElementById('adminUserTable');
                 if (uTable && localState.users) {
                     uTable.innerHTML = localState.users.map(u => `
                         <tr>
                             <td class="p-2 font-bold dark:text-white">${u.name}</td>
                             <td class="p-2 uppercase text-[10px]">${u.role}</td>
+                            <td class="p-2 font-bold text-emerald-600">₦${(u.wallet || 0).toLocaleString()}</td>
                             <td class="p-2 text-amber-500 font-bold">${u.stars}★</td>
                             <td class="p-2"><span class="${u.isBlocked ? 'text-red-500':'text-emerald-500'} font-bold">${u.isBlocked ? 'Blocked':'Active'}</span></td>
                             <td class="p-2">
@@ -769,6 +939,19 @@
                 alert(data.message);
                 fetchGlobalState();
             } catch(err) { alert("Verification Error: " + err.message); }
+        }
+
+        async function verifyWithdrawal(withdrawalId, action) {
+            try {
+                const res = await fetch('/api/admin/verify-withdrawal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ withdrawalId, action })
+                });
+                const data = await res.json();
+                alert(data.message);
+                fetchGlobalState();
+            } catch(err) { alert("Withdrawal Approval Error: " + err.message); }
         }
 
         async function respondOffer(offerId, status) {
@@ -910,7 +1093,8 @@
             localStorage.removeItem('worksphere_user');
             switchView('landing'); 
             document.getElementById('topNavUser').innerHTML = `
-                <button onclick="showModal('modal-auth')" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600">Login / Register</button>
+                <button onclick="openAuthModal('login')" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600">Login</button>
+                <button onclick="openAuthModal('register')" class="bg-indigo-600 text-white text-xs px-3 py-2 rounded-lg font-bold">Register</button>
                 <button onclick="adminLoginPrompt()" class="bg-slate-900 dark:bg-slate-700 text-white text-xs px-3 py-2 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-shield-halved mr-1"></i> Admin
                 </button>
